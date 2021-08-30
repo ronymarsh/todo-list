@@ -4,6 +4,7 @@ const cors = require('cors');
 const consts = require('./consts');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const keys = require('../config/keys');
 
 // App Variables
 
@@ -16,9 +17,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 require('./models/User');
-mongoose.connect(
-  'mongodb+srv://dbUser:vmxtjo19@cluster0.owme0.mongodb.net/TODO_LIST_DEV?retryWrites=true&w=majority'
-);
+mongoose.connect(keys.MONGO_URI);
 
 // Routes Definitions
 require('./routes/signup')(app);
