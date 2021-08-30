@@ -6,7 +6,7 @@ import axios from 'axios';
 function App() {
   const makeRequest = async () => {
     const res = await axios
-      .get('http://localhost:5000')
+      .get('http://localhost:5000/api/users/currentuser')
       .catch((err) => console.log(err));
 
     console.log(res.data);

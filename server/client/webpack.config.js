@@ -25,7 +25,6 @@ module.exports = {
     filename: 'bundle.js',
   },
   devServer: {
-    proxy: { '/': 'http://localhost:3000' },
     static: path.join(__dirname, 'public'),
     port: 3000,
     hot: true,
