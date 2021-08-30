@@ -1,11 +1,13 @@
 // Required External Modules
 const express = require('express');
+const cors = require('cors');
 
 // App Variables
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // App Configuration
+app.use(cors());
 
 // Routes Definitions
 app.get('/', (req, res) => {
