@@ -1,7 +1,4 @@
 const path = require('path');
-const { webpack } = require('webpack');
-
-// const plugins = [new CleanWebpackPlugin(), new MiniCssExtractPlugin()];
 
 module.exports = {
   mode: 'development',
@@ -31,7 +28,9 @@ module.exports = {
   devtool: 'source-map',
 
   devServer: {
+    static: path.resolve(__dirname, 'public'),
     port: 3000,
     hot: true,
+    open: true,
   },
 };
