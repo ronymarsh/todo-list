@@ -5,6 +5,8 @@ const consts = require('./consts');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const keys = require('../config/keys');
+const AppRouter = require('./routes');
+const path = require('path');
 
 // App Variables
 
@@ -20,10 +22,19 @@ require('./models/User');
 mongoose.connect(keys.MONGO_URI);
 
 // Routes Definitions
-require('./routes/signup')(app);
-require('./routes/signin')(app);
-require('./routes/signout')(app);
-require('./routes/currentuser')(app);
+app.use('/api', AppRouter);
+
+console.log(keys.IS_PROD, keys.NODE_ENV, process.env.NODE_ENV);
+
+if (keys.IS_PROD) {
+  //static serve of React app
+  const buildDir = path.join(__dirname, '..', '..', 'client', 'public');
+  app.use(express.static(buildDir)); //   ../../client/public
+  console.log('serveing static files from ', buildDir);
+  app.use('*', (req, res) => {
+    res.sendFile(path.join(buildDir, 'index.html'));
+  });
+}
 
 // Server Activation
 app.listen(PORT, () => {
