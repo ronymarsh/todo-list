@@ -1,24 +1,36 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const mode = (process.env.NODE_ENV || 'development').trim();
+const outputDir = path.resolve(__dirname, '..', 'build');
 
 console.log('this is webpack.config ', mode);
 
 const plugins = [
   new HtmlWebpackPlugin({
-    template: './src/template.html',
+    template: './public/index.html',
+  }),
+  new webpack.HotModuleReplacementPlugin(),
+  new CleanWebpackPlugin({
+    cleanOnceBeforeBuildPatterns: outputDir,
   }),
 ];
+
+console.log(plugins);
 
 module.exports = {
   mode,
 
+  target: 'web',
+
   entry: './src/index.js',
   output: {
     filename: 'bundle.[contenthash].js',
-    path: path.resolve(__dirname, 'public'),
-    publicPath: mode === 'production' ? '/' : '.',
+    path: outputDir,
+    //publicPath: mode === 'production' ? '/' : '.',
+    assetModuleFilename: 'images/[name].[hash][ext]',
   },
 
   plugins,
@@ -37,6 +49,14 @@ module.exports = {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
       },
+      {
+        test: /\.html$/,
+        use: ['html-loader'],
+      },
+      {
+        test: /\.(svg|png|jpg|gif)$/,
+        type: 'asset/resource',
+      },
     ],
   },
   devtool: 'source-map',
@@ -45,7 +65,7 @@ module.exports = {
     proxy: {
       '/api': 'http://localhost:5000',
     },
-    static: path.resolve(__dirname, 'public'),
+    static: outputDir, //path.resolve(__dirname, 'public'),
     port: 3000,
     hot: true,
     open: true,

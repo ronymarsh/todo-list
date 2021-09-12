@@ -31,6 +31,7 @@ if (keys.IS_PROD) {
   const buildDir = path.join(__dirname, '..', '..', 'client', 'public');
   app.use(express.static(buildDir)); //   ../../client/public
   console.log('serveing static files from ', buildDir);
+
   app.use('*', (req, res) => {
     res.sendFile(path.join(buildDir, 'index.html'));
   });
