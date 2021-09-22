@@ -1,17 +1,57 @@
 const User = require('../models/User');
+const Password = require('../services/Password');
 const { body, validationResult } = require('express-validator');
-
 const { Router } = require('express');
+const jwt = require('jsonwebtoken');
 
 const UsersRouter = Router();
-
 UsersRouter.get('/currentuser', (req, res) => {
-  res.status(200).send({ userName: 'Samer' });
+  if (!req.session?.jwt) return res.status(400).send({ currentUser: null });
+  try {
+    const payload = jwt.verify(req.session.jwt, process.env.JWT_KEY);
+    req.currentUser = payload;
+  } catch (err) {}
+  res.status(200).send({ currentUser: req.currentUser || null });
 });
 
-UsersRouter.post('/signin', (req, res) => {
-  res.status(200).send(req.body);
-});
+UsersRouter.post(
+  '/signin',
+  [
+    body('email').isEmail().withMessage('Email not valid'),
+    body('password')
+      .trim()
+      .notEmpty()
+      .withMessage('You must supply a password'),
+  ],
+  async (req, res) => {
+    const { email, password } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) res.status(400).send('Invalid Cradentials');
+
+    const passwordsMatch = await Password.compare(
+      existingUser.password,
+      password
+    );
+
+    if (!passwordsMatch) res.status(400).send('Invalid Cradentials');
+
+    // Generate a JWT
+    const userJwt = jwt.sign(
+      {
+        id: existingUser.id,
+        email: existingUser.email,
+      },
+      process.env.JWT_KEY
+    );
+    // Store it on the session object
+    req.session = {
+      jwt: userJwt,
+    };
+
+    res.status(200).send(existingUser);
+  }
+);
 
 UsersRouter.post(
   '/signup',
@@ -27,7 +67,7 @@ UsersRouter.post(
   ],
   (req, res, next) => {
     const errors = validationResult(req);
-    console.log(errors);
+
     if (!errors.isEmpty()) {
       throw new Error('Some errors');
     }
@@ -40,19 +80,29 @@ UsersRouter.post(
     if (!existingUser) {
       const user = new User({ userName, email, password });
 
-      try {
-        await user.save((err) => console.log(err));
-      } catch (err) {
-        console.log(err);
-      }
-      // security warning- users unhashed password is contained in user
+      await user.save().catch((err) => console.log(err));
+
+      // Generate a JWT
+      const userJwt = jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+        },
+        process.env.JWT_KEY
+      );
+      // Store it on the session object
+      req.session = {
+        jwt: userJwt,
+      };
+
       res.status(201).send(user.id);
-    } else res.status(200).send('email already exists');
+    } else res.status(400).send('email already exists');
   }
 );
 
 UsersRouter.get('/signout', (req, res) => {
-  res.status(200).send({ message: 'signout' });
+  req.session = null;
+  res.send({});
 });
 
 module.exports = UsersRouter;
