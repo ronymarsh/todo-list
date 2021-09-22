@@ -10,6 +10,7 @@ import {
 } from 'react-router-dom';
 
 import Header from './components/Header';
+import Landing from './pages/Landing';
 import Signup from './pages/Signup';
 import Signin from './pages/Signin';
 
@@ -19,7 +20,7 @@ function App() {
       .get('/api/users/currentuser')
       .catch((err) => console.log(err));
 
-    console.log(res.data);
+    console.log(res);
   };
 
   makeRequest();
@@ -27,6 +28,7 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <Header />
+        <Route exact path="/" component={Landing} />
         <Route exact path="/signup" component={Signup} />
         <Route exact path="/signin" component={Signin} />
       </div>
