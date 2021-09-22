@@ -41,12 +41,12 @@ UsersRouter.post(
       const user = new User({ userName, email, password });
 
       try {
-        user.save((err) => console.log(err));
+        await user.save((err) => console.log(err));
       } catch (err) {
         console.log(err);
       }
-
-      res.status(201).send(user);
+      // security warning- users unhashed password is contained in user
+      res.status(201).send(user.id);
     } else res.status(200).send('email already exists');
   }
 );
