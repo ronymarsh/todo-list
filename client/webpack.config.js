@@ -29,7 +29,7 @@ module.exports = {
   output: {
     filename: 'bundle.[contenthash].js',
     path: outputDir,
-    //publicPath: mode === 'production' ? '/' : '.',
+    publicPath: '/', //mode === 'production' ? '/' : '.',
     assetModuleFilename: 'images/[name].[hash][ext]',
   },
 
@@ -65,7 +65,11 @@ module.exports = {
     proxy: {
       '/api': 'http://localhost:5000',
     },
-    static: outputDir, //path.resolve(__dirname, 'public'),
+    historyApiFallback: true,
+    static: {
+      directory: outputDir,
+      publicPath: '/',
+    }, //path.resolve(__dirname, 'public'),
     port: 3000,
     hot: true,
     open: true,
