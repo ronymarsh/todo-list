@@ -41,6 +41,7 @@ UsersRouter.post(
       {
         id: existingUser.id,
         email: existingUser.email,
+        userName: existingUser.userName,
       },
       process.env.JWT_KEY
     );
@@ -87,6 +88,7 @@ UsersRouter.post(
         {
           id: user.id,
           email: user.email,
+          userName: user.userName,
         },
         process.env.JWT_KEY
       );

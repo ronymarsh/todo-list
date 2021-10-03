@@ -9,25 +9,43 @@ import {
   BrowserRouter,
 } from 'react-router-dom';
 
+import AuthState from './enums/AuthState';
+
 import Header from './components/Header';
 import Landing from './pages/Landing';
 import Signup from './pages/Signup';
 import Signin from './pages/Signin';
+import getCurrentUser from './services/getCurrentUser';
+
+import { useState, useEffect } from 'react';
 
 function App() {
-  const makeRequest = async () => {
-    const res = await axios
-      .get('/api/users/currentuser')
-      .catch((err) => console.log(err));
+  const [user, setUser] = useState(null);
+  const [auth, setAuth] = useState(AuthState.UNKOWN);
 
-    console.log(res);
-  };
+  useEffect(() => {
+    let cancel = false;
 
-  makeRequest();
+    const request = async () => {
+      const response = await getCurrentUser();
+      if (!cancel) {
+        setAuth(AuthState.LOGGED_IN);
+        setUser(response);
+      }
+    };
+
+    request();
+
+    // when component unmountes
+    return () => {
+      cancel = true;
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <div className="App">
-        <Header />
+        <Header currentUser={user} authState={auth} />
         <Route exact path="/" component={Landing} />
         <Route exact path="/signup" component={Signup} />
         <Route exact path="/signin" component={Signin} />
