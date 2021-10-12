@@ -1,9 +1,20 @@
 import axios from 'axios';
 
-const apiRequest = async ({ method = 'get', url, body }) => {
+const BASE_HEADERS = { 'Content-type': 'application/json' };
+
+const apiRequest = async ({ method = 'GET', url, data, extraHeaders }) => {
   // make request and get response
-  const res = await axios[method](url, body).catch((err) => console.log(err));
-  return res.data;
+  const res = await axios({
+    method,
+    url,
+    data,
+    headers: {
+      ...BASE_HEADERS,
+      ...extraHeaders,
+    },
+  }).catch((err) => err.response);
+
+  return res;
 };
 
 export default apiRequest;

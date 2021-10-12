@@ -10,6 +10,10 @@ const AppRouter = require('./routes');
 const path = require('path');
 const cookieSession = require('cookie-session');
 const dotenv = require('dotenv');
+const passport = require('passport');
+const BearerStrategy = require('passport-http-bearer').Strategy;
+const jwt = require('jsonwebtoken');
+const User = require('./models/User');
 dotenv.config();
 // App Variables
 
@@ -18,6 +22,22 @@ app.set('trust proxy', true);
 const PORT = process.env.PORT || consts.DEFAULT_PORT; //default port is 5000
 
 // App Configuration
+// verify callback for passport to use when calling passport.authenticate() in future requests
+app.use(passport.initialize());
+passport.use(
+  new BearerStrategy(async function (accessToken, done) {
+    try {
+      var uid = jwt.verify(accessToken, process.env.JWT_ACCESS_KEY).id;
+      var user = await User.findOne({ uid });
+      // safety net, if verify succeeded but no such user in db?
+      if (!user) return done(null, false);
+    } catch (err) {
+      return done(err);
+    }
+    return done(null, user);
+  })
+);
+
 app.use(cors());
 app.use(json());
 app.use(morgan('dev'));
@@ -27,6 +47,7 @@ app.use(
   })
 );
 
+require('./models/RefreshToken');
 require('./models/User');
 mongoose.connect(keys.MONGO_URI);
 

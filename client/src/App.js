@@ -1,57 +1,51 @@
 import React from 'react';
 import './App.css';
-import axios from 'axios';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  BrowserRouter,
-} from 'react-router-dom';
-
-import AuthState from './enums/AuthState';
-
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import Header from './components/Header';
 import Landing from './pages/Landing';
 import Signup from './pages/Signup';
 import Signin from './pages/Signin';
-import getCurrentUser from './services/getCurrentUser';
+import { connect } from 'react-redux';
+import * as actions from './actions';
 
-import { useState, useEffect } from 'react';
-
-function App() {
-  const [user, setUser] = useState(null);
-  const [auth, setAuth] = useState(AuthState.UNKOWN);
-
-  useEffect(() => {
-    let cancel = false;
-
-    const request = async () => {
-      const response = await getCurrentUser();
-      if (!cancel) {
-        setAuth(AuthState.LOGGED_IN);
-        setUser(response);
-      }
-    };
-
-    request();
-
-    // when component unmountes
-    return () => {
-      cancel = true;
-    };
-  }, []);
-
+function App(props) {
+  props.isLoggedIn();
   return (
-    <BrowserRouter>
-      <div className="App">
-        <Header currentUser={user} authState={auth} />
+    <Router>
+      <div className="container">
+        <Header />
         <Route exact path="/" component={Landing} />
         <Route exact path="/signup" component={Signup} />
         <Route exact path="/signin" component={Signin} />
       </div>
-    </BrowserRouter>
+    </Router>
   );
 }
 
-export default App;
+export default connect(null, actions)(App);
+
+// <Header currentUser={user} authState={auth} />
+// <Route exact path="/" component={Landing} />
+// <Route exact path="/signup" component={Signup} />
+// <Route exact path="/signin" component={Signin} authState={auth} />
+
+// const [user, setUser] = useState(null);
+// const [auth, setAuth] = useState(AuthState.UNKOWN);
+
+// useEffect(() => {
+//   let cancel = false;
+//   const request = async () => {
+//     const response = await getCurrentUser();
+//     if (!cancel) {
+//       setUser(response.currentUser);
+//       setAuth(
+//         response.currentUser ? AuthState.LOGGED_IN : AuthState.LOGGED_OUT
+//       );
+//     }
+//   };
+//   request();
+//   // when component unmountes
+//   return () => {
+//     cancel = true;
+//   };
+// }, [auth]);

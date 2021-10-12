@@ -1,17 +1,21 @@
 const User = require('../models/User');
+const RefreshToken = require('../models/RefreshToken');
 const Password = require('../services/Password');
 const { body, validationResult } = require('express-validator');
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
+const passport = require('passport');
 
 const UsersRouter = Router();
-UsersRouter.get('/currentuser', (req, res) => {
-  if (!req.session?.jwt) return res.status(400).send({ currentUser: null });
-  try {
-    const payload = jwt.verify(req.session.jwt, process.env.JWT_KEY);
-    req.currentUser = payload;
-  } catch (err) {}
-  res.status(200).send({ currentUser: req.currentUser || null });
+
+UsersRouter.get('/currentuser', (req, res, next) => {
+  passport.authenticate('bearer', function (err, user) {
+    if (err || !user) return res.status(401).send({ currentUser: null });
+    req.logIn(user, { session: false }, function (err) {
+      if (err) return next(err);
+      return res.status(200).send({ currentUser: user });
+    });
+  })(req, res, next);
 });
 
 UsersRouter.post(
@@ -27,30 +31,46 @@ UsersRouter.post(
     const { email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
-    if (!existingUser) res.status(400).send('Invalid Cradentials');
+    if (!existingUser) return res.status(400).send('Invalid Cradentials');
 
     const passwordsMatch = await Password.compare(
       existingUser.password,
       password
     );
 
-    if (!passwordsMatch) res.status(400).send('Invalid Cradentials');
+    if (!passwordsMatch) return res.status(400).send('Invalid Cradentials');
 
-    // Generate a JWT
-    const userJwt = jwt.sign(
+    // Generate an access token valid for 1 minute
+    const accessToken = jwt.sign(
       {
         id: existingUser.id,
-        email: existingUser.email,
-        userName: existingUser.userName,
       },
-      process.env.JWT_KEY
+      process.env.JWT_ACCESS_KEY,
+      {
+        expiresIn: '60s',
+      }
     );
-    // Store it on the session object
-    req.session = {
-      jwt: userJwt,
-    };
 
-    res.status(200).send(existingUser);
+    // Generate a refresh token valid for 30 days or until logout
+    const refreshToken = jwt.sign(
+      {
+        id: existingUser.id,
+      },
+      process.env.JWT_REFRESH_KEY,
+      {
+        expiresIn: '30 days',
+      }
+    );
+
+    // save the refreshToken in db for token tracking
+    const user = existingUser.id;
+    const value = refreshToken;
+    // if there is a token in db with same user, delete it before saving
+    await RefreshToken.deleteOne({ user });
+    // create object
+    const refreshTokenObj = new RefreshToken({ user, value });
+    await refreshTokenObj.save().catch((err) => console.log(err));
+    return res.status(200).send({ accessToken, refreshToken });
   }
 );
 
@@ -77,34 +97,106 @@ UsersRouter.post(
   async (req, res) => {
     const { userName, email, password } = req.body;
     const existingUser = await User.findOne({ email });
-    console.log(existingUser);
     if (!existingUser) {
       const user = new User({ userName, email, password });
 
       await user.save().catch((err) => console.log(err));
 
-      // Generate a JWT
-      const userJwt = jwt.sign(
+      // Generate an access token valid for 1 minute
+      const accessToken = jwt.sign(
         {
           id: user.id,
-          email: user.email,
-          userName: user.userName,
         },
-        process.env.JWT_KEY
+        process.env.JWT_ACCESS_KEY,
+        {
+          expiresIn: '60s',
+        }
       );
-      // Store it on the session object
-      req.session = {
-        jwt: userJwt,
-      };
 
-      res.status(201).send(user.id);
-    } else res.status(400).send('email already exists');
+      // Generate a refresh token valid for 30 days or until logout
+      const refreshToken = jwt.sign(
+        {
+          id: user.id,
+        },
+        process.env.JWT_REFRESH_KEY,
+        {
+          expiresIn: '30 days',
+        }
+      );
+
+      // save the refreshToken in db for token tracking
+      user = user.id;
+      const value = refreshToken;
+      // if there is a token in db with same user, delete it before saving
+      await RefreshToken.deleteOne({ user });
+      // create object
+      const refreshTokenObj = new RefreshToken({ user, value });
+      await refreshTokenObj.save().catch((err) => console.log(err));
+
+      return res.status(201).send({ accessToken, refreshToken });
+    } else return res.status(400).send('email already exists');
   }
 );
 
-UsersRouter.get('/signout', (req, res) => {
-  req.session = null;
-  res.send({});
+UsersRouter.post('/refresh', async (req, res) => {
+  const { user, refreshToken } = req.body;
+  const db_refreshToken = await RefreshToken.findOne({ user });
+
+  if (refreshToken !== db_refreshToken.value)
+    return res.status(401).send('No such refresh token');
+
+  if (db_refreshToken.isValid) {
+    // Generate an access token valid for 1 minute
+    const accessToken = jwt.sign(
+      {
+        id: user,
+      },
+      process.env.JWT_ACCESS_KEY,
+      {
+        expiresIn: '60s',
+      }
+    );
+
+    // Generate a refresh token valid for 30 days or until logout
+    const new_refreshToken = jwt.sign(
+      {
+        id: user,
+      },
+      process.env.JWT_REFRESH_KEY,
+      {
+        expiresIn: '30 days',
+      }
+    );
+
+    // save the new refreshToken in db for token tracking
+    const value = new_refreshToken;
+    // delete old refresh token before saving new one
+    await RefreshToken.deleteOne({ user });
+    // create object
+    const refreshTokenObj = new RefreshToken({ user, value });
+    await refreshTokenObj.save().catch((err) => console.log(err));
+    return res
+      .status(201)
+      .send({ accessToken, refreshToken: new_refreshToken });
+  } else return res.status(401).send('refresh token not valid');
 });
+
+UsersRouter.post('/signout', async (req, res) => {
+  const { token } = req.body;
+  const decoded = jwt.decode(token);
+  if (decoded == null) return res.status(400).send('Token error');
+  // delete user refresh token from db, client side will delete from browser localStorage
+  const user = decoded.id;
+  await RefreshToken.deleteOne({ user });
+  return res.status(200).send({});
+});
+
+UsersRouter.get(
+  '/test',
+  passport.authenticate('bearer', { session: false }),
+  (req, res) => {
+    res.send({});
+  }
+);
 
 module.exports = UsersRouter;
