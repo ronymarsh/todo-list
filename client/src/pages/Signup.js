@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import useRequest from '../services/useRequest';
 import storeTokens from '../services/storeTokens';
+import { connect } from 'react-redux';
+import * as actions from '../actions';
 
 function Signup(props) {
   const [userName, setUserName] = useState('');
@@ -77,4 +79,4 @@ function Signup(props) {
   );
 }
 
-export default Signup;
+export default connect(null, actions)(Signup);
