@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import Header from './components/Header';
@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import * as actions from './actions';
 
 function App(props) {
-  props.isLoggedIn();
+  useEffect(() => props.isLoggedIn(), [props.auth]);
   return (
     <Router>
       <div className="container">

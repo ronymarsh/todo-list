@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import apiRequest from './apiRequest';
 
 const useRequest = ({ method, url, data, onSuccess, history }) => {
-  const [error, setError] = useState(null);
+  const [errors, setError] = useState(null);
   const doRequest = async () => {
     setError(null);
     const res = await apiRequest({ method, url, data });
@@ -11,15 +11,16 @@ const useRequest = ({ method, url, data, onSuccess, history }) => {
       onSuccess(res.data, history);
       return res.data;
     } else {
-      setError(
-        <div className="row red-text text-darken-1">
-          <div className="col 12s">{res.data}</div>
+      const errorsToRender = res.data.map((err) => (
+        <div key={err.param} className="row red-text text-darken-1">
+          <div className="col 12s">{err.msg}</div>
         </div>
-      );
+      ));
+      setError(errorsToRender);
     }
   };
 
-  return { doRequest, error };
+  return { doRequest, errors };
 };
 
 export default useRequest;

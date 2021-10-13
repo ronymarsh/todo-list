@@ -10,7 +10,8 @@ const UsersRouter = Router();
 
 UsersRouter.get('/currentuser', (req, res, next) => {
   passport.authenticate('bearer', function (err, user) {
-    if (err || !user) return res.status(401).send({ currentUser: null });
+    if (err) return res.status(401).send({ currentUser: null });
+    if (!user) return res.status(404).send({ currentUser: null });
     req.logIn(user, { session: false }, function (err) {
       if (err) return next(err);
       return res.status(200).send({ currentUser: user });
@@ -31,14 +32,20 @@ UsersRouter.post(
     const { email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
-    if (!existingUser) return res.status(400).send('Invalid Cradentials');
+    if (!existingUser)
+      return res
+        .status(400)
+        .send([{ msg: 'Invalid Cradentials', param: 'signin' }]);
 
     const passwordsMatch = await Password.compare(
       existingUser.password,
       password
     );
 
-    if (!passwordsMatch) return res.status(400).send('Invalid Cradentials');
+    if (!passwordsMatch)
+      return res
+        .status(400)
+        .send([{ msg: 'Invalid Cradentials', param: 'signin' }]);
 
     // Generate an access token valid for 1 minute
     const accessToken = jwt.sign(
@@ -90,7 +97,7 @@ UsersRouter.post(
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      throw new Error('Some errors');
+      return res.status(400).send(errors.array());
     }
     next();
   },
@@ -98,7 +105,7 @@ UsersRouter.post(
     const { userName, email, password } = req.body;
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      const user = new User({ userName, email, password });
+      var user = new User({ userName, email, password });
 
       await user.save().catch((err) => console.log(err));
 
@@ -134,7 +141,11 @@ UsersRouter.post(
       await refreshTokenObj.save().catch((err) => console.log(err));
 
       return res.status(201).send({ accessToken, refreshToken });
-    } else return res.status(400).send('email already exists');
+    } else {
+      return res
+        .status(400)
+        .send([{ msg: 'Email already exists', param: 'Email' }]);
+    }
   }
 );
 
@@ -185,7 +196,7 @@ UsersRouter.post('/signout', async (req, res) => {
   const { token } = req.body;
   const decoded = jwt.decode(token);
   if (decoded == null) return res.status(400).send('Token error');
-  // delete user refresh token from db, client side will delete from browser localStorage
+  // delete user refresh token from db, client side will delete from localStorage
   const user = decoded.id;
   await RefreshToken.deleteOne({ user });
   return res.status(200).send({});

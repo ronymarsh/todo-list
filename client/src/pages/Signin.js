@@ -9,7 +9,7 @@ function Signin(props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { doRequest, error } = useRequest({
+  const { doRequest, errors } = useRequest({
     method: 'POST',
     url: '/api/users/signin',
     data: {
@@ -58,7 +58,7 @@ function Signin(props) {
             <label htmlFor="password">Password</label>
           </div>
         </div>
-        {error}
+        {errors}
         <button className="btn light-blue darken-2" type="submit" name="action">
           Sign In
         </button>

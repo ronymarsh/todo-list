@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { loggedOut, updateUser } from '../actions';
 import { bindActionCreators } from 'redux';
@@ -8,15 +9,15 @@ import apiRequest from '../services/apiRequest';
 function Header({ auth, user, loggedOut, updateUser }) {
   const links = [
     auth == AuthState.LOGGED_OUT && {
-      href: '/signup',
+      to: '/signup',
       text: 'Sign Up',
     },
     auth == AuthState.LOGGED_OUT && {
-      href: '/signin',
+      to: '/signin',
       text: 'Sign In',
     },
     auth === AuthState.LOGGED_IN && {
-      href: '#',
+      to: '/',
       text: 'Log Out',
       onClick: async () => {
         await apiRequest({
@@ -36,9 +37,9 @@ function Header({ auth, user, loggedOut, updateUser }) {
     .filter(Boolean)
     .map((link) => (
       <li key={link.text}>
-        <a href={link.href} onClick={link.onClick}>
+        <Link to={link.to} onClick={link.onClick}>
           {link.text}
-        </a>
+        </Link>
       </li>
     ));
   return (
@@ -48,7 +49,7 @@ function Header({ auth, user, loggedOut, updateUser }) {
           Todos
         </a>
         <ul id="nav-mobile" className="right hide-on-med-and-down">
-          <li>{user ? 'Hello  ' + user.userName : ''} </li>
+          <li key="a">{user ? 'Hello  ' + user.userName : ''} </li>
           {links}
         </ul>
       </div>
