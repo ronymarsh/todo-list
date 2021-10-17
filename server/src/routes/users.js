@@ -10,9 +10,10 @@ const UsersRouter = Router();
 
 UsersRouter.get('/currentuser', (req, res, next) => {
   passport.authenticate('bearer', function (err, user) {
-    if (err) return res.status(401).send({ currentUser: null });
-    if (!user) return res.status(404).send({ currentUser: null });
+    if (!user) return res.status(441).send({ currentUser: null });
+    if (err) return res.status(440).send({ currentUser: null });
     req.logIn(user, { session: false }, function (err) {
+      console.log('CURRENT USER ROUTE: ', user);
       if (err) return next(err);
       return res.status(200).send({ currentUser: user });
     });
@@ -150,11 +151,14 @@ UsersRouter.post(
 );
 
 UsersRouter.post('/refresh', async (req, res) => {
-  const { user, refreshToken } = req.body;
-  const db_refreshToken = await RefreshToken.findOne({ user });
+  const { refreshToken } = req.body;
+  const db_refreshToken = await RefreshToken.findOne({ refreshToken });
+  if (!db_refreshToken)
+    return res.send({ accessToken: null, refreshToken: null });
 
+  const user = db_refreshToken.user;
   if (refreshToken !== db_refreshToken.value)
-    return res.status(401).send('No such refresh token');
+    return res.send({ accessToken: null, refreshToken: null });
 
   if (db_refreshToken.isValid) {
     // Generate an access token valid for 1 minute
@@ -179,23 +183,23 @@ UsersRouter.post('/refresh', async (req, res) => {
       }
     );
 
-    // save the new refreshToken in db for token tracking
     const value = new_refreshToken;
     // delete old refresh token before saving new one
     await RefreshToken.deleteOne({ user });
     // create object
     const refreshTokenObj = new RefreshToken({ user, value });
+    // save the new refreshToken in db for token tracking
     await refreshTokenObj.save().catch((err) => console.log(err));
     return res
       .status(201)
       .send({ accessToken, refreshToken: new_refreshToken });
-  } else return res.status(401).send('refresh token not valid');
+  } else return res.send({ accessToken: null, refreshToken: null });
 });
 
 UsersRouter.post('/signout', async (req, res) => {
   const { token } = req.body;
   const decoded = jwt.decode(token);
-  if (decoded == null) return res.status(400).send('Token error');
+  if (decoded == null) return res.send('Token error');
   // delete user refresh token from db, client side will delete from localStorage
   const user = decoded.id;
   await RefreshToken.deleteOne({ user });

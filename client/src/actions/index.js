@@ -1,14 +1,16 @@
 import { IS_LOGGED_IN, UPDATE_USER, LOGIN, LOGOUT } from './types';
 import apiRequest from '../services/apiRequest';
+import authApiRequest from '../services/authApiRequest';
 import AuthState from '../enums/AuthState';
 
 export const isLoggedIn = () => async (dispatch) => {
-  const res = await apiRequest({
+  const res = await authApiRequest({
     url: '/api/users/currentuser',
     extraHeaders: {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
     },
   });
+  console.log('IS_LOGGED_IN:', res);
   dispatch({
     type: IS_LOGGED_IN,
     payload: res.data.currentUser ? AuthState.LOGGED_IN : AuthState.LOGGED_OUT,
@@ -16,7 +18,7 @@ export const isLoggedIn = () => async (dispatch) => {
 };
 
 export const updateUser = () => async (dispatch) => {
-  const res = await apiRequest({
+  const res = await authApiRequest({
     url: '/api/users/currentuser',
     extraHeaders: {
       Authorization: 'Bearer ' + localStorage.getItem('accessToken'),

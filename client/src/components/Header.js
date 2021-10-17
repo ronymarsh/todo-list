@@ -7,6 +7,8 @@ import AuthState from '../enums/AuthState';
 import apiRequest from '../services/apiRequest';
 
 function Header({ auth, user, loggedOut, updateUser }) {
+  console.log('HEADER USER: ', user);
+  console.log('HEADER AUTH: ', auth);
   const links = [
     auth == AuthState.LOGGED_OUT && {
       to: '/signup',

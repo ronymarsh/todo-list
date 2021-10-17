@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+// ergency , importance , deadline
+
 const todoSchema = new Schema({
   status: {
     type: String,
