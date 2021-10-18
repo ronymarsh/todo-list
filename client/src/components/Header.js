@@ -1,14 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { loggedOut, updateUser } from '../actions';
+import { loggedOut } from '../actions';
 import { bindActionCreators } from 'redux';
 import AuthState from '../enums/AuthState';
 import apiRequest from '../services/apiRequest';
 
-function Header({ auth, user, loggedOut, updateUser }) {
-  console.log('HEADER USER: ', user);
-  console.log('HEADER AUTH: ', auth);
+function Header({ auth, user, loggedOut }) {
   const links = [
     auth == AuthState.LOGGED_OUT && {
       to: '/signup',
@@ -32,7 +30,6 @@ function Header({ auth, user, loggedOut, updateUser }) {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         loggedOut();
-        updateUser();
       },
     },
   ]
@@ -64,7 +61,7 @@ function mapStateToProps({ auth, user }) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ loggedOut, updateUser }, dispatch);
+  return bindActionCreators({ loggedOut }, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Header);

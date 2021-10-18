@@ -11,7 +11,6 @@ import * as actions from './actions';
 function App(props) {
   useEffect(() => {
     props.isLoggedIn();
-    props.updateUser();
   }, [props.auth, props.user]);
   return (
     <Router>

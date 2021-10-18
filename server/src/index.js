@@ -27,15 +27,11 @@ app.use(passport.initialize());
 passport.use(
   new BearerStrategy(async function (accessToken, done) {
     try {
-      console.log('BEARER VERIFY: HERE!');
       var _id = jwt.verify(accessToken, process.env.JWT_ACCESS_KEY).id;
-      console.log('BEARER VERIFY _ID: ', _id);
       var user = await User.findOne({ _id });
-      console.log('BEARER VERIFY USER: ', user);
       // safety net, if verify succeeded but no such user in db?
       if (!user) return done(null, false);
     } catch (err) {
-      console.log('BEARER VERIFY ERROR: ', err);
       return done(err);
     }
     return done(null, user);

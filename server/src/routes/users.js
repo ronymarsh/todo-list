@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+const generateTokens = require('../services/generateTokens');
 
 const UsersRouter = Router();
 
@@ -12,9 +13,8 @@ UsersRouter.get('/currentuser', (req, res, next) => {
   passport.authenticate('bearer', function (err, user) {
     if (err) return res.status(440).send({ currentUser: null });
     req.logIn(user, { session: false }, function (err) {
-      console.log('CURRENT USER ROUTE: ', user);
       if (err) return next(err);
-      return res.status(200).send({ currentUser: user });
+      return res.send({ currentUser: user });
     });
   })(req, res, next);
 });
@@ -38,37 +38,9 @@ UsersRouter.post('/signin', async (req, res) => {
       .status(400)
       .send([{ msg: 'Invalid Cradentials', param: 'signin' }]);
 
-  // Generate an access token valid for 1 minute
-  const accessToken = jwt.sign(
-    {
-      id: existingUser.id,
-    },
-    process.env.JWT_ACCESS_KEY,
-    {
-      expiresIn: '60s',
-    }
-  );
+  const { accessToken, refreshToken } = await generateTokens(existingUser.id);
 
-  // Generate a refresh token valid for 30 days or until logout
-  const refreshToken = jwt.sign(
-    {
-      id: existingUser.id,
-    },
-    process.env.JWT_REFRESH_KEY,
-    {
-      expiresIn: '30 days',
-    }
-  );
-
-  // save the refreshToken in db for token tracking
-  const user = existingUser.id;
-  const value = refreshToken;
-  // if there is a token in db with same user, delete it before saving
-  await RefreshToken.deleteOne({ user });
-  // create object
-  const refreshTokenObj = new RefreshToken({ user, value });
-  await refreshTokenObj.save().catch((err) => console.log(err));
-  return res.status(200).send({ accessToken, refreshToken });
+  return res.send({ accessToken, refreshToken });
 });
 
 UsersRouter.post(
@@ -99,36 +71,7 @@ UsersRouter.post(
 
       await user.save().catch((err) => console.log(err));
 
-      // Generate an access token valid for 1 minute
-      const accessToken = jwt.sign(
-        {
-          id: user.id,
-        },
-        process.env.JWT_ACCESS_KEY,
-        {
-          expiresIn: '60s',
-        }
-      );
-
-      // Generate a refresh token valid for 30 days or until logout
-      const refreshToken = jwt.sign(
-        {
-          id: user.id,
-        },
-        process.env.JWT_REFRESH_KEY,
-        {
-          expiresIn: '30 days',
-        }
-      );
-
-      // save the refreshToken in db for token tracking
-      user = user.id;
-      const value = refreshToken;
-      // if there is a token in db with same user, delete it before saving
-      await RefreshToken.deleteOne({ user });
-      // create object
-      const refreshTokenObj = new RefreshToken({ user, value });
-      await refreshTokenObj.save().catch((err) => console.log(err));
+      const { accessToken, refreshToken } = await generateTokens(user.id);
 
       return res.status(201).send({ accessToken, refreshToken });
     } else {
@@ -140,49 +83,20 @@ UsersRouter.post(
 );
 
 UsersRouter.post('/refresh', async (req, res) => {
-  const { refreshToken } = req.body;
-  const db_refreshToken = await RefreshToken.findOne({ refreshToken });
+  const { oldRefreshToken } = req.body;
+  const db_refreshToken = await RefreshToken.findOne({ oldRefreshToken });
   if (!db_refreshToken)
-    return res.send({ accessToken: null, refreshToken: null });
+    return res.status(250).send({ accessToken: null, refreshToken: null });
 
   const user = db_refreshToken.user;
-  if (refreshToken !== db_refreshToken.value)
+  if (oldRefreshToken !== db_refreshToken.value)
     return res.send({ accessToken: null, refreshToken: null });
 
   if (db_refreshToken.isValid) {
-    // Generate an access token valid for 1 minute
-    const accessToken = jwt.sign(
-      {
-        id: user,
-      },
-      process.env.JWT_ACCESS_KEY,
-      {
-        expiresIn: '60s',
-      }
-    );
+    const { accessToken, refreshToken } = await generateTokens(user);
 
-    // Generate a refresh token valid for 30 days or until logout
-    const new_refreshToken = jwt.sign(
-      {
-        id: user,
-      },
-      process.env.JWT_REFRESH_KEY,
-      {
-        expiresIn: '30 days',
-      }
-    );
-
-    const value = new_refreshToken;
-    // delete old refresh token before saving new one
-    await RefreshToken.deleteOne({ user });
-    // create object
-    const refreshTokenObj = new RefreshToken({ user, value });
-    // save the new refreshToken in db for token tracking
-    await refreshTokenObj.save().catch((err) => console.log(err));
-    return res
-      .status(201)
-      .send({ accessToken, refreshToken: new_refreshToken });
-  } else return res.send({ accessToken: null, refreshToken: null });
+    return res.status(201).send({ accessToken, refreshToken });
+  } else return res.status(260).send({ accessToken: null, refreshToken: null });
 });
 
 UsersRouter.post('/signout', async (req, res) => {
@@ -192,7 +106,7 @@ UsersRouter.post('/signout', async (req, res) => {
   // delete user refresh token from db, client side will delete from localStorage
   const user = decoded.id;
   await RefreshToken.deleteOne({ user });
-  return res.status(200).send({});
+  return res.send({});
 });
 
 module.exports = UsersRouter;

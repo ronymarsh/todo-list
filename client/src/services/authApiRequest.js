@@ -8,7 +8,7 @@ const authApiRequest = async ({ method = 'GET', url, data, extraHeaders }) => {
     var refreshRes = await apiRequest({
       method: 'POST',
       url: '/api/users/refresh',
-      data: { refreshToken: oldRefreshToken },
+      data: { oldRefreshToken },
     });
     if (refreshRes.status === 201) {
       // if refresh worked as expected

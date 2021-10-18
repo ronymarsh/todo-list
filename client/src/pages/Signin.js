@@ -20,7 +20,6 @@ function Signin(props) {
     onSuccess: (tokens, history) => {
       storeTokens(tokens);
       history.push('/');
-      props.updateUser();
       props.loggedIn();
     },
   });
