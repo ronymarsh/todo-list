@@ -5,6 +5,7 @@ import { loggedOut } from '../actions';
 import { bindActionCreators } from 'redux';
 import AuthState from '../enums/AuthState';
 import apiRequest from '../services/apiRequest';
+import { nav_style } from './css';
 
 function Header({ auth, user, loggedOut }) {
   const links = [
@@ -43,8 +44,8 @@ function Header({ auth, user, loggedOut }) {
     ));
   return (
     <nav>
-      <div className="nav-wrapper light-blue darken-2">
-        <a href="/" className="brand-logo center">
+      <div className="nav-wrapper light-blue darken-2" style={nav_style}>
+        <a href="/" className="brand-logo left">
           Todos
         </a>
         <ul id="nav-mobile" className="right hide-on-med-and-down">
