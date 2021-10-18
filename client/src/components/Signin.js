@@ -19,7 +19,7 @@ function Signin(props) {
     history: props.history,
     onSuccess: (tokens, history) => {
       storeTokens(tokens);
-      history.push('/');
+      history.push('/dashboard');
       props.loggedIn();
     },
   });
