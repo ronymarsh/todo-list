@@ -16,9 +16,6 @@ function Todo() {
             <i className="material-icons" style={status_icon_style}>
               circle
             </i>
-            <i className="material-icons-outlined" style={card_icon_style}>
-              more_vert
-            </i>
           </div>
           <div className="card-content black-text">
             <span className="card-title">Java assignment</span>
@@ -26,7 +23,7 @@ function Todo() {
             <div>Last Updated: 13/10/2021 18:00</div>
             <p>Time To Complete: 4 Days</p>
           </div>
-          <div class="card-action" style={card_action_style}>
+          <div className="card-action" style={card_action_style}>
             <i className="material-icons-outlined" style={card_icon_style}>
               clear
             </i>

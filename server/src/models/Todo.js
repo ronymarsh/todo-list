@@ -4,6 +4,8 @@ const { Schema } = mongoose;
 // ergency , importance , deadline
 
 const todoSchema = new Schema({
+  title: String,
+  due_date: Date,
   status: {
     type: String,
     default: 'TODO',
@@ -16,7 +18,6 @@ const todoSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  content: String,
 });
 
 module.exports = todoSchema;
