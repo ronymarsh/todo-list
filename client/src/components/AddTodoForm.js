@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import { parse, format } from 'date-fns';
+
+import 'react-datepicker/dist/react-datepicker.css';
 
 import {
+  label_style,
   col_style,
   card_style,
   card_icon_style,
@@ -11,14 +16,6 @@ import {
 function AddTodoForm({ onDone }) {
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
-
-  useEffect(() => {
-    document
-      .querySelector('.datepicker')
-      .addEventListener('change', dateChangeHandler);
-  }, []);
-
-  const dateChangeHandler = (event) => setDueDate(event.target.value);
 
   const onSubmit = (event) => {
     event.preventDefault();
@@ -31,6 +28,9 @@ function AddTodoForm({ onDone }) {
       <div className="card-content black-text">
         <form onSubmit={onSubmit} className="col s12">
           <div className="row">
+            <label style={label_style}>Title</label>
+          </div>
+          <div className="row">
             <div className="input-field col s12">
               <input
                 id="title"
@@ -38,13 +38,20 @@ function AddTodoForm({ onDone }) {
                 className=""
                 onChange={(event) => setTitle(event.target.value)}
               />
-              <label htmlFor="title">Title</label>
             </div>
           </div>
           <div className="row">
+            <label style={label_style}>Due Date</label>
+          </div>
+          <div className="row">
             <div className="input-field col s12">
-              <input id="dueDate" type="text" className="datepicker" />
-              <label htmlFor="dueDate">Due Date</label>
+              <DatePicker
+                id="dueDate"
+                onSelect={(date) => setDueDate(format(date, 'dd/MM/yyyy'))}
+                value={dueDate}
+                autoComplete="off"
+                minDate={Date.now()}
+              />
             </div>
           </div>
           <button

@@ -13,6 +13,7 @@ const dotenv = require('dotenv');
 const passport = require('passport');
 const BearerStrategy = require('passport-http-bearer').Strategy;
 const jwt = require('jsonwebtoken');
+const ServerError = require('./utils/ServerError');
 const User = require('./models/User');
 dotenv.config();
 // App Variables
@@ -25,6 +26,7 @@ const PORT = process.env.PORT || consts.DEFAULT_PORT; //default port is 5000
 // verify callback for passport to use when calling passport.authenticate() in future requests
 app.use(passport.initialize());
 passport.use(
+  consts.BEARER_STRATEGY,
   new BearerStrategy(async function (accessToken, done) {
     try {
       var _id = jwt.verify(accessToken, process.env.JWT_ACCESS_KEY).id;
@@ -65,6 +67,13 @@ if (keys.IS_PROD) {
   });
 }
 
+app.use((error, req, res, next) => {
+  if (!error) next();
+  else if (error instanceof ServerError) {
+    console.log(error.toJSON());
+    res.status(error.httpCode).json(error.toJSON());
+  } else next(error);
+});
 // Server Activation
 app.listen(PORT, () => {
   console.log('Server listening');

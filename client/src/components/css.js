@@ -37,3 +37,7 @@ export const col_style = {
 export const card_style = {
   boxShadow: 'none',
 };
+
+export const label_style = {
+  fontSize: '18px',
+};
