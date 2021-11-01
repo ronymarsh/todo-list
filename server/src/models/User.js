@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-const todoSchema = require('./Todo');
+const { todoSchema } = require('./Todo');
 const Password = require('../services/Password');
 
 const userSchema = new Schema({

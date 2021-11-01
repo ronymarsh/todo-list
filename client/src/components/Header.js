@@ -21,6 +21,7 @@ function Header({ auth, user, loggedOut }) {
       to: '/',
       text: 'Log Out',
       onClick: async () => {
+        loggedOut();
         await apiRequest({
           method: 'POST',
           url: '/api/users/signout',
@@ -30,7 +31,6 @@ function Header({ auth, user, loggedOut }) {
         });
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        loggedOut();
       },
     },
   ]

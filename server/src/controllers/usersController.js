@@ -16,7 +16,13 @@ exports.signIn = async (req, res) => {
   if (!existingUser)
     return res
       .status(400)
-      .send([{ msg: 'Invalid Cradentials', param: 'signin' }]);
+      .send([
+        new ServerError(
+          'Invalid Cradentials',
+          494,
+          'INVALID_CRADENTIALS'
+        ).toJSON(),
+      ]);
 
   const passwordsMatch = await Password.compare(
     existingUser.password,
@@ -26,7 +32,13 @@ exports.signIn = async (req, res) => {
   if (!passwordsMatch)
     return res
       .status(400)
-      .send([{ msg: 'Invalid Cradentials', param: 'signin' }]);
+      .send([
+        new ServerError(
+          'Invalid Cradentials',
+          494,
+          'INVALID_CRADENTIALS'
+        ).toJSON(),
+      ]);
 
   const { accessToken, refreshToken } = await generateTokens(existingUser.id);
 
@@ -47,7 +59,9 @@ exports.signUp = async (req, res) => {
   } else {
     return res
       .status(400)
-      .send([{ msg: 'Email already exists', param: 'Email' }]);
+      .send([
+        new ServerError('Email Already Exists', 495, 'EMAIL_EXISTS').toJSON(),
+      ]);
   }
 };
 

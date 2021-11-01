@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
-import { parse, format } from 'date-fns';
-
+import { format } from 'date-fns';
 import 'react-datepicker/dist/react-datepicker.css';
-
-import {
-  label_style,
-  col_style,
-  card_style,
-  card_icon_style,
-  status_icon_style,
-  card_action_style,
-} from './css';
+import { label_style, card_style } from './css';
 
 function AddTodoForm({ onDone }) {
   const [title, setTitle] = useState('');
+  const [dueDateText, setDueDateText] = useState('');
   const [dueDate, setDueDate] = useState('');
 
   const onSubmit = (event) => {
@@ -47,8 +39,11 @@ function AddTodoForm({ onDone }) {
             <div className="input-field col s12">
               <DatePicker
                 id="dueDate"
-                onSelect={(date) => setDueDate(format(date, 'dd/MM/yyyy'))}
-                value={dueDate}
+                onSelect={(date) => {
+                  setDueDateText(format(date, 'dd/MM/yyyy'));
+                  setDueDate(format(date, 'yyyy-MM-dd'));
+                }}
+                value={dueDateText}
                 autoComplete="off"
                 minDate={Date.now()}
               />
@@ -59,7 +54,7 @@ function AddTodoForm({ onDone }) {
             type="submit"
             name="action"
           >
-            Ok
+            Done
           </button>
         </form>
       </div>

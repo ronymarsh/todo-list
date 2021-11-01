@@ -9,21 +9,24 @@ function Signup(props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { doRequest, errors } = useRequest({
-    method: 'POST',
-    url: '/api/users/signup',
-    data: {
-      userName,
-      email,
-      password,
+  const { doRequest, errors } = useRequest(
+    {
+      method: 'POST',
+      url: '/api/users/signup',
+      data: {
+        userName,
+        email,
+        password,
+      },
+      history: props.history,
+      onSuccess: (tokens, history) => {
+        storeTokens(tokens);
+        history.push('/dashboard');
+        props.loggedIn();
+      },
     },
-    history: props.history,
-    onSuccess: (tokens, history) => {
-      storeTokens(tokens);
-      history.push('/dashboard');
-      props.loggedIn();
-    },
-  });
+    false
+  );
 
   const onSubmit = async (event) => {
     event.preventDefault();

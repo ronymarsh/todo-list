@@ -1,9 +1,17 @@
 import React from 'react';
+import { Redirect } from 'react-router-dom';
 import { divider_style } from './css';
+import * as actions from '../actions';
+import AuthState from '../enums/AuthState';
+import { connect } from 'react-redux';
 
-function Landing() {
+function Landing({ auth, user }) {
+  const renderRedirect = () => {
+    if (auth == AuthState.LOGGED_IN) return <Redirect to="/dashboard" />;
+  };
   return (
     <>
+      {renderRedirect()}
       <div className="section">
         <h2 className="center-align">To-Do List App</h2>
       </div>
@@ -16,5 +24,7 @@ function Landing() {
     </>
   );
 }
-
-export default Landing;
+function mapStateToProps({ auth, user }) {
+  return { auth, user };
+}
+export default connect(mapStateToProps, actions)(Landing);

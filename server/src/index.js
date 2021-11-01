@@ -51,6 +51,7 @@ app.use(
 
 require('./models/RefreshToken');
 require('./models/User');
+require('./models/Todo');
 mongoose.connect(keys.MONGO_URI);
 
 // Routes Definitions
