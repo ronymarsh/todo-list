@@ -2,18 +2,36 @@ import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import { format } from 'date-fns';
 import 'react-datepicker/dist/react-datepicker.css';
-import { label_style, card_style } from './css';
+import { label_style, card_style, formBtns_style } from './css';
+import useRequest from '../services/useRequest';
 
-function AddTodoForm({ onDone }) {
+import * as actions from '../actions';
+import { connect } from 'react-redux';
+
+function AddTodoForm(props) {
   const [title, setTitle] = useState('');
   const [dueDateText, setDueDateText] = useState('');
   const [dueDate, setDueDate] = useState('');
 
-  const onSubmit = (event) => {
+  const { doRequest, errors } = useRequest(
+    {
+      method: 'POST',
+      url: '/api/todos/add',
+      data: {
+        title,
+        due_date: dueDate,
+      },
+      onSuccess: () => {
+        props.onDone();
+        props.fetchTodos();
+      },
+    },
+    true
+  );
+
+  const onSubmit = async (event) => {
     event.preventDefault();
-    onDone();
-    console.log('TITLE:', title);
-    console.log('DUE DATE:', dueDate);
+    await doRequest();
   };
   return (
     <div className="card blue-grey lighten-5" style={card_style}>
@@ -49,17 +67,27 @@ function AddTodoForm({ onDone }) {
               />
             </div>
           </div>
-          <button
-            className="btn light-blue darken-2"
-            type="submit"
-            name="action"
-          >
-            Done
-          </button>
+          {errors}
+          <div style={formBtns_style}>
+            <button
+              className="btn light-blue darken-2"
+              onClick={() => props.onDone()}
+              type="button"
+            >
+              Close
+            </button>
+            <button
+              className="btn light-blue darken-2"
+              type="submit"
+              name="action"
+            >
+              Done
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 }
 
-export default AddTodoForm;
+export default connect(null, actions)(AddTodoForm);

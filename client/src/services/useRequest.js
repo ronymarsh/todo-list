@@ -25,7 +25,7 @@ const useRequest = (
       return res.data;
     } else {
       const errorsToRender = res.data.map((err) => (
-        <div key={err.httpCode} className="row red-text text-darken-1">
+        <div key={err.errorCode} className="row red-text text-darken-1">
           <div className="col 12s">{err.message}</div>
         </div>
       ));

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { divider_style, list_style } from './css';
-import Todo from './Todo';
+import TodoList from './TodoList';
 import AddTodoBtn from './AddTodoBtn';
 import AddTodoForm from './AddTodoForm';
 
@@ -23,7 +23,7 @@ function Dashboard() {
         )}
       </div>
       <div className="section" style={list_style}>
-        <Todo />
+        <TodoList />
       </div>
     </>
   );

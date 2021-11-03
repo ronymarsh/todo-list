@@ -5,12 +5,12 @@ const todoValidationMiddleware = (req, res, next) => {
   const errors = [];
   if (!title) {
     errors.push(
-      new ServerError('Must provide title', 430, 'EMPTY_FIELD').toJSON()
+      new ServerError('Must provide title', 430, 'EMPTY_TITLE').toJSON()
     );
   }
   if (!due_date) {
     errors.push(
-      new ServerError('Must provide due date', 430, 'EMPTY_FIELD').toJSON()
+      new ServerError('Must provide due date', 431, 'EMPTY_DATE').toJSON()
     );
   }
 

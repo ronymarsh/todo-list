@@ -41,3 +41,8 @@ export const card_style = {
 export const label_style = {
   fontSize: '18px',
 };
+
+export const formBtns_style = {
+  display: 'flex',
+  justifyContent: 'space-around',
+};

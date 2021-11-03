@@ -1,4 +1,4 @@
-import { IS_LOGGED_IN, UPDATE_USER, LOGIN, LOGOUT } from './types';
+import { IS_LOGGED_IN, UPDATE_USER, LOGIN, LOGOUT, FETCH_TODOS } from './types';
 import authApiRequest from '../services/authApiRequest';
 import AuthState from '../enums/AuthState';
 
@@ -40,4 +40,24 @@ export const loggedOut = () => async (dispatch) => {
   dispatch({ type: LOGOUT, payload: AuthState.LOGGED_OUT });
   // update user state
   dispatch({ type: UPDATE_USER, payload: null });
+};
+
+export const fetchTodos = () => async (dispatch) => {
+  const currentUserRes = await authApiRequest({
+    url: '/api/users/currentuser',
+    extraHeaders: {
+      Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
+    },
+  });
+
+  const uid = currentUserRes.data.currentUser._id;
+
+  const res = await authApiRequest({
+    url: `/api/todos/${uid}`,
+    extraHeaders: {
+      Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
+    },
+  });
+
+  dispatch({ type: FETCH_TODOS, payload: res.data });
 };
