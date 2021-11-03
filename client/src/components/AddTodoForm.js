@@ -58,8 +58,9 @@ function AddTodoForm(props) {
               <DatePicker
                 id="dueDate"
                 onSelect={(date) => {
+                  date.setHours(23, 59);
                   setDueDateText(format(date, 'dd/MM/yyyy'));
-                  setDueDate(format(date, 'yyyy-MM-dd'));
+                  setDueDate(format(date, 'yyyy-MM-dd HH:mm'));
                 }}
                 value={dueDateText}
                 autoComplete="off"

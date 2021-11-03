@@ -16,11 +16,29 @@ function TodoList(props) {
     props.fetchTodos();
   }, []);
 
+  const localStringOptions = {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  };
+
   const renderTodos = () => {
     return props.todos.map((todo) => {
-      var createdAt = new Date(todo.created_at).toLocaleString();
-      var updatedAt = new Date(todo.updated_at).toLocaleString();
-      var dueDate = new Date(todo.due_date).toLocaleString();
+      var createdAt = new Date(todo.created_at).toLocaleString(
+        [],
+        localStringOptions
+      );
+      var updatedAt = new Date(todo.updated_at).toLocaleString(
+        [],
+        localStringOptions
+      );
+      var dueDate = new Date(todo.due_date).toLocaleString(
+        [],
+        localStringOptions
+      );
       var daysToComplete = Math.floor(
         (new Date(todo.due_date) - Date.now()) / (1000 * 60 * 60 * 24)
       );
