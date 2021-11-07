@@ -15,13 +15,18 @@ export const card_action_style = {
   justifyContent: 'space-evenly',
 };
 
+export const card_content_style = {
+  padding: '0px 24px 15px 24px',
+};
+
 export const card_icon_style = {
   fontSize: '24px',
   margin: '7px 7px',
+  cursor: 'pointer',
 };
 
 export const status_icon_style = {
-  fontSize: '24px',
+  fontSize: '22px',
   margin: '7px 7px',
   color: '#0288d1',
 };
@@ -45,4 +50,26 @@ export const label_style = {
 export const formBtns_style = {
   display: 'flex',
   justifyContent: 'space-around',
+};
+
+export const status_div_style = {
+  display: 'flex',
+  flexDirection: 'row-reverse',
+  backgroundColor: '#d8d8d8',
+};
+
+export const status_text = {
+  margin: '8px 2px',
+  color: '#a8a8a8',
+};
+
+export const status_dropdown = {
+  position: 'relative',
+  display: 'inline-block',
+};
+
+export const status_dropdown_content = {
+  zIndex: '1',
+  position: 'absolute',
+  backgroundColor: '#d8d8d8',
 };
